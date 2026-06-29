@@ -3,154 +3,681 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HEMIS – Oliy taʼlim boshqaruvi</title>
-    <!-- Font Awesome (ikonalar) -->
+    <title>HEMIS – To‘liq tizim</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <!-- LOGIN SAHIFASI (default ko'rinadi) -->
-    <div id="loginPage" class="login-container">
-        <div class="login-box">
-            <div class="login-header">
-                <i class="fas fa-university" style="font-size: 48px; color: #0056b3;"></i>
-                <h1>HEMIS</h1>
-                <p>Oliy taʼlim axborot tizimi</p>
+
+<!-- ==================== KIRISH SAHIFASI ==================== -->
+<div id="loginPage" class="login-container">
+    <div class="login-box">
+        <div class="login-header">
+            <i class="fas fa-university"></i>
+            <h1>HEMIS</h1>
+            <p>Oliy taʼlim axborot tizimi</p>
+        </div>
+        <form id="loginForm" onsubmit="return login()">
+            <div class="input-group">
+                <i class="fas fa-user"></i>
+                <input type="text" id="loginUsername" placeholder="Login" value="admin" />
             </div>
-            <form id="loginForm" onsubmit="return login()">
-                <div class="input-group">
-                    <i class="fas fa-user"></i>
-                    <input type="text" id="username" placeholder="Login" required />
-                </div>
-                <div class="input-group">
-                    <i class="fas fa-lock"></i>
-                    <input type="password" id="password" placeholder="Parol" required />
-                </div>
-                <button type="submit" class="btn-login">Kirish</button>
-            </form>
-            <p class="login-info">Demo: talaba / 123456</p>
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="loginPassword" placeholder="Parol" value="admin" />
+            </div>
+            <button type="submit" class="btn-login">Kirish</button>
+        </form>
+        <div class="login-info">
+            <p><b>Demo hisoblar:</b></p>
+            <p>👑 Admin: admin / admin</p>
+            <p>👨‍🏫 O‘qituvchi: teacher / teacher</p>
+            <p>👨‍🎓 Talaba: student / student</p>
         </div>
     </div>
+</div>
 
-    <!-- DASHBOARD SAHIFASI (dastlab yashirin) -->
-    <div id="dashboardPage" style="display:none;">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-brand">
-                <i class="fas fa-university"></i>
-                <span>HEMIS</span>
+<!-- ==================== ADMIN DASHBOARD ==================== -->
+<div id="adminDashboard" class="dashboard-container" style="display:none;">
+    <aside class="sidebar">
+        <div class="sidebar-brand"><i class="fas fa-university"></i><span>HEMIS Admin</span></div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li class="active" data-tab="admin-stats"><a href="#"><i class="fas fa-tachometer-alt"></i><span>Statistika</span></a></li>
+                <li data-tab="admin-users"><a href="#"><i class="fas fa-users"></i><span>Foydalanuvchilar</span></a></li>
+                <li data-tab="admin-courses"><a href="#"><i class="fas fa-book"></i><span>Kurslar</span></a></li>
+                <li data-tab="admin-enroll"><a href="#"><i class="fas fa-user-plus"></i><span>Ro‘yxatga olish</span></a></li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer"><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i><span>Chiqish</span></a></div>
+    </aside>
+    <main class="main-content">
+        <header class="topbar"><h2 id="adminPageTitle">Statistika</h2><div class="topbar-right"><span><i class="fas fa-user-circle"></i> Admin</span></div></header>
+        
+        <!-- Admin Statistika -->
+        <div id="admin-stats" class="tab-content">
+            <div class="stats-grid" id="adminStatsGrid"></div>
+        </div>
+
+        <!-- Admin Foydalanuvchilar -->
+        <div id="admin-users" class="tab-content" style="display:none;">
+            <button class="btn-primary" onclick="openModal('userModal')"><i class="fas fa-plus"></i> Yangi foydalanuvchi</button>
+            <div style="margin-top:20px; overflow-x:auto;"><table class="table" id="userTable"><thead><tr><th>ID</th><th>Ism</th><th>Login</th><th>Rol</th><th>Amallar</th></tr></thead><tbody id="userTableBody"></tbody></table></div>
+        </div>
+
+        <!-- Admin Kurslar -->
+        <div id="admin-courses" class="tab-content" style="display:none;">
+            <button class="btn-primary" onclick="openModal('courseModal')"><i class="fas fa-plus"></i> Yangi kurs</button>
+            <div style="margin-top:20px; overflow-x:auto;"><table class="table" id="courseTable"><thead><tr><th>ID</th><th>Nomi</th><th>Kod</th><th>O‘qituvchi</th><th>Amallar</th></tr></thead><tbody id="courseTableBody"></tbody></table></div>
+        </div>
+
+        <!-- Admin Ro‘yxatga olish -->
+        <div id="admin-enroll" class="tab-content" style="display:none;">
+            <p>Talabani kursga yozish:</p>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin:15px 0;">
+                <select id="enrollStudent" class="form-control" style="min-width:150px;"></select>
+                <select id="enrollCourse" class="form-control" style="min-width:150px;"></select>
+                <button class="btn-primary" onclick="enrollStudent()">Yozish</button>
             </div>
-            <nav class="sidebar-nav">
-                <ul>
-                    <li class="active"><a href="#"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                    <li><a href="#"><i class="fas fa-book"></i> Kurslar</a></li>
-                    <li><a href="#"><i class="fas fa-user-graduate"></i> Talabalar</a></li>
-                    <li><a href="#"><i class="fas fa-chart-line"></i> Baholar</a></li>
-                    <li><a href="#"><i class="fas fa-calendar-check"></i> Davomat</a></li>
-                    <li><a href="#"><i class="fas fa-file-alt"></i> Hisobotlar</a></li>
-                    <li><a href="#"><i class="fas fa-cog"></i> Sozlamalar</a></li>
-                </ul>
-            </nav>
-            <div class="sidebar-footer">
-                <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Chiqish</a>
-            </div>
-        </aside>
+            <div style="margin-top:20px; overflow-x:auto;"><table class="table" id="enrollTable"><thead><tr><th>Talaba</th><th>Kurs</th></tr></thead><tbody id="enrollTableBody"></tbody></table></div>
+        </div>
+    </main>
+</div>
 
-        <!-- Asosiy kontent -->
-        <main class="main-content">
-            <header class="topbar">
-                <div class="topbar-left">
-                    <h2>Dashboard</h2>
-                </div>
-                <div class="topbar-right">
-                    <span><i class="fas fa-bell"></i></span>
-                    <span><i class="fas fa-user-circle"></i> Talaba</span>
-                </div>
-            </header>
+<!-- ==================== O‘QITUVCHI DASHBOARD ==================== -->
+<div id="teacherDashboard" class="dashboard-container" style="display:none;">
+    <aside class="sidebar">
+        <div class="sidebar-brand"><i class="fas fa-chalkboard-teacher"></i><span>HEMIS Teacher</span></div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li class="active" data-tab="teacher-stats"><a href="#"><i class="fas fa-tachometer-alt"></i><span>Statistika</span></a></li>
+                <li data-tab="teacher-courses"><a href="#"><i class="fas fa-book"></i><span>Mening kurslarim</span></a></li>
+                <li data-tab="teacher-assignments"><a href="#"><i class="fas fa-tasks"></i><span>Topshiriqlar</span></a></li>
+                <li data-tab="teacher-grading"><a href="#"><i class="fas fa-check-double"></i><span>Baholash</span></a></li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer"><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i><span>Chiqish</span></a></div>
+    </aside>
+    <main class="main-content">
+        <header class="topbar"><h2 id="teacherPageTitle">Statistika</h2><div class="topbar-right"><span><i class="fas fa-user-circle"></i> <span id="teacherName">O‘qituvchi</span></span></div></header>
+        
+        <div id="teacher-stats" class="tab-content"><div class="stats-grid" id="teacherStatsGrid"></div></div>
+        <div id="teacher-courses" class="tab-content" style="display:none;"><div id="teacherCourseList"></div></div>
+        <div id="teacher-assignments" class="tab-content" style="display:none;">
+            <button class="btn-primary" onclick="openModal('assignmentModal')"><i class="fas fa-plus"></i> Yangi topshiriq</button>
+            <div style="margin-top:20px;" id="teacherAssignmentList"></div>
+        </div>
+        <div id="teacher-grading" class="tab-content" style="display:none;">
+            <p>Topshiriqni tanlang va baholang:</p>
+            <select id="gradingAssignmentSelect" class="form-control" style="margin:10px 0;" onchange="loadGradingList()"></select>
+            <div id="gradingList"></div>
+        </div>
+    </main>
+</div>
 
-            <!-- Statistik kartalar -->
-            <section class="stats-grid">
-                <div class="stat-card">
-                    <i class="fas fa-book-open"></i>
-                    <div>
-                        <h3>8</h3>
-                        <p>Faol kurslar</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <i class="fas fa-tasks"></i>
-                    <div>
-                        <h3>5</h3>
-                        <p>Kutilayotgan topshiriq</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <i class="fas fa-star"></i>
-                    <div>
-                        <h3>4.8</h3>
-                        <p>O'rtacha reyting</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <i class="fas fa-clock"></i>
-                    <div>
-                        <h3>92%</h3>
-                        <p>Davomat</p>
-                    </div>
-                </div>
-            </section>
+<!-- ==================== TALABA DASHBOARD ==================== -->
+<div id="studentDashboard" class="dashboard-container" style="display:none;">
+    <aside class="sidebar">
+        <div class="sidebar-brand"><i class="fas fa-user-graduate"></i><span>HEMIS Student</span></div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li class="active" data-tab="student-stats"><a href="#"><i class="fas fa-tachometer-alt"></i><span>Statistika</span></a></li>
+                <li data-tab="student-courses"><a href="#"><i class="fas fa-book"></i><span>Mening kurslarim</span></a></li>
+                <li data-tab="student-assignments"><a href="#"><i class="fas fa-tasks"></i><span>Topshiriqlar</span></a></li>
+                <li data-tab="student-grades"><a href="#"><i class="fas fa-star"></i><span>Baholar</span></a></li>
+                <li data-tab="student-profile"><a href="#"><i class="fas fa-user"></i><span>Profil</span></a></li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer"><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i><span>Chiqish</span></a></div>
+    </aside>
+    <main class="main-content">
+        <header class="topbar"><h2 id="studentPageTitle">Statistika</h2><div class="topbar-right"><span><i class="fas fa-user-circle"></i> <span id="studentName">Talaba</span></span></div></header>
+        
+        <div id="student-stats" class="tab-content"><div class="stats-grid" id="studentStatsGrid"></div></div>
+        <div id="student-courses" class="tab-content" style="display:none;"><div id="studentCourseList"></div></div>
+        <div id="student-assignments" class="tab-content" style="display:none;"><div id="studentAssignmentList"></div></div>
+        <div id="student-grades" class="tab-content" style="display:none;"><div id="studentGradeList"></div></div>
+        <div id="student-profile" class="tab-content" style="display:none;"><div id="studentProfileCard"></div></div>
+    </main>
+</div>
 
-            <!-- So'nggi topshiriqlar va reyting -->
-            <div class="content-grid">
-                <section class="recent-assignments">
-                    <h3>So'nggi topshiriqlar</h3>
-                    <ul>
-                        <li>
-                            <span>Matematika – 3-mustaqil ish</span>
-                            <span class="due">Muddat: 10-iyul</span>
-                        </li>
-                        <li>
-                            <span>Fizika – Laboratoriya</span>
-                            <span class="due">Muddat: 12-iyul</span>
-                        </li>
-                        <li>
-                            <span>Dasturlash – Loyiha</span>
-                            <span class="due">Muddat: 15-iyul</span>
-                        </li>
-                    </ul>
-                </section>
-
-                <section class="ranking">
-                    <h3>Guruh reytingi</h3>
-                    <ul>
-                        <li><span>1. Alisher K.</span> <span class="score">92%</span></li>
-                        <li><span>2. Malika R.</span> <span class="score">88%</span></li>
-                        <li><span>3. Javohir S.</span> <span class="score">85%</span></li>
-                        <li><span>4. Siz (4-o'rin)</span> <span class="score">82%</span></li>
-                    </ul>
-                </section>
-            </div>
-        </main>
+<!-- ==================== MODALLAR ==================== -->
+<!-- User Modal -->
+<div id="userModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('userModal')">&times;</span>
+        <h3>Yangi foydalanuvchi</h3>
+        <input type="text" id="userName" placeholder="To‘liq ism" class="form-control" />
+        <input type="text" id="userLogin" placeholder="Login" class="form-control" />
+        <input type="password" id="userPass" placeholder="Parol" class="form-control" />
+        <select id="userRole" class="form-control"><option value="student">Talaba</option><option value="teacher">O‘qituvchi</option><option value="admin">Admin</option></select>
+        <button class="btn-primary" onclick="addUser()">Saqlash</button>
     </div>
+</div>
 
-    <!-- Script -->
-    <script>
-        function login() {
-            // Demo: har qanday login/parol bilan dashboardni ko'rsat
-            document.getElementById('loginPage').style.display = 'none';
-            document.getElementById('dashboardPage').style.display = 'flex';
-            return false; // form yuborilmasin
-        }
-        function logout() {
-            document.getElementById('dashboardPage').style.display = 'none';
-            document.getElementById('loginPage').style.display = 'flex';
-        }
-        // Agar Enter bosilsa ham ishlash uchun
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && document.getElementById('loginPage').style.display !== 'none') {
-                login();
-            }
+<!-- Course Modal -->
+<div id="courseModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('courseModal')">&times;</span>
+        <h3>Yangi kurs</h3>
+        <input type="text" id="courseName" placeholder="Kurs nomi" class="form-control" />
+        <input type="text" id="courseCode" placeholder="Kod (mas. MATH101)" class="form-control" />
+        <select id="courseTeacher" class="form-control"></select>
+        <button class="btn-primary" onclick="addCourse()">Saqlash</button>
+    </div>
+</div>
+
+<!-- Assignment Modal -->
+<div id="assignmentModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('assignmentModal')">&times;</span>
+        <h3>Yangi topshiriq</h3>
+        <select id="assignCourse" class="form-control"></select>
+        <input type="text" id="assignTitle" placeholder="Topshiriq sarlavhasi" class="form-control" />
+        <textarea id="assignDesc" placeholder="Tavsif" class="form-control"></textarea>
+        <input type="date" id="assignDue" class="form-control" />
+        <button class="btn-primary" onclick="addAssignment()">Saqlash</button>
+    </div>
+</div>
+
+<!-- ==================== SCRIPTS ==================== -->
+<script>
+// ========== DATA LAYER (localStorage) ==========
+function getData() {
+    let data = localStorage.getItem('hemisData');
+    if (!data) {
+        // Seed ma'lumotlar
+        const seed = {
+            users: [
+                { id: 1, name: 'Admin OTM', username: 'admin', password: 'admin', role: 'admin' },
+                { id: 2, name: 'Aliqulov A.', username: 'teacher', password: 'teacher', role: 'teacher' },
+                { id: 3, name: 'Talaba M.', username: 'student', password: 'student', role: 'student' }
+            ],
+            courses: [
+                { id: 1, name: 'Matematika', code: 'MATH101', teacherId: 2 },
+                { id: 2, name: 'Dasturlash', code: 'CS101', teacherId: 2 }
+            ],
+            enrollments: [
+                { studentId: 3, courseId: 1 },
+                { studentId: 3, courseId: 2 }
+            ],
+            assignments: [
+                { id: 1, courseId: 1, title: '1-mustaqil ish', description: 'Limitlar va hosilalar', dueDate: '2026-07-10' },
+                { id: 2, courseId: 2, title: 'Loyiha', description: 'Todo dasturi yozish', dueDate: '2026-07-15' }
+            ],
+            submissions: [
+                { id: 1, assignmentId: 1, studentId: 3, fileUrl: 'ish.pdf', grade: 85, feedback: 'Yaxshi' }
+            ],
+            nextId: { users: 4, courses: 3, assignments: 3, submissions: 2 }
+        };
+        localStorage.setItem('hemisData', JSON.stringify(seed));
+        return seed;
+    }
+    return JSON.parse(data);
+}
+
+function saveData(data) {
+    localStorage.setItem('hemisData', JSON.stringify(data));
+}
+
+function getNextId(type) {
+    let data = getData();
+    data.nextId[type] = (data.nextId[type] || 0) + 1;
+    saveData(data);
+    return data.nextId[type];
+}
+
+function findUser(id) { return getData().users.find(u => u.id === id); }
+function findCourse(id) { return getData().courses.find(c => c.id === id); }
+function findAssignment(id) { return getData().assignments.find(a => a.id === id); }
+
+// ========== AUTH ==========
+function login() {
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+    const data = getData();
+    const user = data.users.find(u => u.username === username && u.password === password);
+    if (!user) { alert('Login yoki parol xato!'); return false; }
+    
+    sessionStorage.setItem('currentUserId', user.id);
+    showDashboard(user.role);
+    return false;
+}
+
+function logout() {
+    sessionStorage.removeItem('currentUserId');
+    document.querySelectorAll('.dashboard-container').forEach(el => el.style.display = 'none');
+    document.getElementById('loginPage').style.display = 'flex';
+}
+
+function getCurrentUser() {
+    const id = parseInt(sessionStorage.getItem('currentUserId'));
+    return findUser(id);
+}
+
+function showDashboard(role) {
+    document.getElementById('loginPage').style.display = 'none';
+    if (role === 'admin') {
+        document.getElementById('adminDashboard').style.display = 'flex';
+        renderAdmin();
+    } else if (role === 'teacher') {
+        document.getElementById('teacherDashboard').style.display = 'flex';
+        renderTeacher();
+    } else if (role === 'student') {
+        document.getElementById('studentDashboard').style.display = 'flex';
+        renderStudent();
+    }
+}
+
+// ========== ADMIN FUNKSIYALARI ==========
+function renderAdmin() {
+    renderAdminStats();
+    renderUserTable();
+    renderCourseTable();
+    renderEnrollSelects();
+    renderEnrollTable();
+    setupTabs('admin');
+}
+
+function renderAdminStats() {
+    const data = getData();
+    const students = data.users.filter(u => u.role === 'student').length;
+    const teachers = data.users.filter(u => u.role === 'teacher').length;
+    const courses = data.courses.length;
+    document.getElementById('adminStatsGrid').innerHTML = `
+        <div class="stat-card"><i class="fas fa-user-graduate"></i><div><h3>${students}</h3><p>Talabalar</p></div></div>
+        <div class="stat-card"><i class="fas fa-chalkboard-teacher"></i><div><h3>${teachers}</h3><p>O‘qituvchilar</p></div></div>
+        <div class="stat-card"><i class="fas fa-book"></i><div><h3>${courses}</h3><p>Kurslar</p></div></div>
+    `;
+}
+
+function renderUserTable() {
+    const data = getData();
+    let html = '';
+    data.users.forEach(u => {
+        html += `<tr><td>${u.id}</td><td>${u.name}</td><td>${u.username}</td><td>${u.role}</td>
+        <td><button class="btn-danger" onclick="deleteUser(${u.id})"><i class="fas fa-trash"></i></button></td></tr>`;
+    });
+    document.getElementById('userTableBody').innerHTML = html;
+}
+
+function deleteUser(id) {
+    if (!confirm('O‘chirilsinmi?')) return;
+    let data = getData();
+    data.users = data.users.filter(u => u.id !== id);
+    // O'chirilgan foydalanuvchining yozuvlarini ham tozalash (ixtiyoriy)
+    saveData(data);
+    renderAdmin();
+}
+
+function addUser() {
+    const name = document.getElementById('userName').value.trim();
+    const username = document.getElementById('userLogin').value.trim();
+    const password = document.getElementById('userPass').value.trim();
+    const role = document.getElementById('userRole').value;
+    if (!name || !username || !password) { alert('Barcha maydonlarni to‘ldiring!'); return; }
+    let data = getData();
+    if (data.users.find(u => u.username === username)) { alert('Bunday login mavjud!'); return; }
+    data.users.push({ id: getNextId('users'), name, username, password, role });
+    saveData(data);
+    closeModal('userModal');
+    document.getElementById('userName').value = '';
+    document.getElementById('userLogin').value = '';
+    document.getElementById('userPass').value = '';
+    renderAdmin();
+}
+
+function renderCourseTable() {
+    const data = getData();
+    let html = '';
+    data.courses.forEach(c => {
+        const teacher = findUser(c.teacherId);
+        html += `<tr><td>${c.id}</td><td>${c.name}</td><td>${c.code}</td><td>${teacher ? teacher.name : 'Noma\'lum'}</td>
+        <td><button class="btn-danger" onclick="deleteCourse(${c.id})"><i class="fas fa-trash"></i></button></td></tr>`;
+    });
+    document.getElementById('courseTableBody').innerHTML = html;
+}
+
+function deleteCourse(id) {
+    if (!confirm('Kurs o‘chirilsinmi?')) return;
+    let data = getData();
+    data.courses = data.courses.filter(c => c.id !== id);
+    data.enrollments = data.enrollments.filter(e => e.courseId !== id);
+    saveData(data);
+    renderAdmin();
+}
+
+function addCourse() {
+    const name = document.getElementById('courseName').value.trim();
+    const code = document.getElementById('courseCode').value.trim();
+    const teacherId = parseInt(document.getElementById('courseTeacher').value);
+    if (!name || !code) { alert('To‘ldiring!'); return; }
+    let data = getData();
+    data.courses.push({ id: getNextId('courses'), name, code, teacherId });
+    saveData(data);
+    closeModal('courseModal');
+    document.getElementById('courseName').value = '';
+    document.getElementById('courseCode').value = '';
+    renderAdmin();
+}
+
+function renderEnrollSelects() {
+    const data = getData();
+    const students = data.users.filter(u => u.role === 'student');
+    const courses = data.courses;
+    let sOpts = '<option value="">Talaba</option>';
+    students.forEach(s => sOpts += `<option value="${s.id}">${s.name}</option>`);
+    document.getElementById('enrollStudent').innerHTML = sOpts;
+    
+    let cOpts = '<option value="">Kurs</option>';
+    courses.forEach(c => cOpts += `<option value="${c.id}">${c.name}</option>`);
+    document.getElementById('enrollCourse').innerHTML = cOpts;
+}
+
+function enrollStudent() {
+    const studentId = parseInt(document.getElementById('enrollStudent').value);
+    const courseId = parseInt(document.getElementById('enrollCourse').value);
+    if (!studentId || !courseId) { alert('Tanlang!'); return; }
+    let data = getData();
+    if (data.enrollments.find(e => e.studentId === studentId && e.courseId === courseId)) {
+        alert('Allaqachon yozilgan!'); return;
+    }
+    data.enrollments.push({ studentId, courseId });
+    saveData(data);
+    renderEnrollTable();
+    renderEnrollSelects();
+}
+
+function renderEnrollTable() {
+    const data = getData();
+    let html = '';
+    data.enrollments.forEach(e => {
+        const student = findUser(e.studentId);
+        const course = findCourse(e.courseId);
+        html += `<tr><td>${student ? student.name : 'Noma\'lum'}</td><td>${course ? course.name : 'Noma\'lum'}</td></tr>`;
+    });
+    document.getElementById('enrollTableBody').innerHTML = html;
+}
+
+// ========== O‘QITUVCHI FUNKSIYALARI ==========
+function renderTeacher() {
+    const user = getCurrentUser();
+    document.getElementById('teacherName').innerText = user ? user.name : 'O‘qituvchi';
+    renderTeacherStats();
+    renderTeacherCourses();
+    renderTeacherAssignments();
+    renderGradingSelect();
+    setupTabs('teacher');
+}
+
+function renderTeacherStats() {
+    const data = getData();
+    const user = getCurrentUser();
+    const myCourses = data.courses.filter(c => c.teacherId === user.id);
+    const students = new Set();
+    data.enrollments.forEach(e => {
+        if (myCourses.find(c => c.id === e.courseId)) students.add(e.studentId);
+    });
+    document.getElementById('teacherStatsGrid').innerHTML = `
+        <div class="stat-card"><i class="fas fa-book"></i><div><h3>${myCourses.length}</h3><p>Mening kurslarim</p></div></div>
+        <div class="stat-card"><i class="fas fa-user-graduate"></i><div><h3>${students.size}</h3><p>Mening talabalarim</p></div></div>
+        <div class="stat-card"><i class="fas fa-tasks"></i><div><h3>${data.assignments.filter(a => myCourses.find(c => c.id === a.courseId)).length}</h3><p>Topshiriqlar</p></div></div>
+    `;
+}
+
+function renderTeacherCourses() {
+    const data = getData();
+    const user = getCurrentUser();
+    const myCourses = data.courses.filter(c => c.teacherId === user.id);
+    let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:15px;">';
+    myCourses.forEach(c => {
+        const count = data.enrollments.filter(e => e.courseId === c.id).length;
+        html += `<div class="stat-card"><i class="fas fa-chalkboard"></i><div><h3>${c.name}</h3><p>${c.code} | Talabalar: ${count}</p></div></div>`;
+    });
+    html += '</div>';
+    document.getElementById('teacherCourseList').innerHTML = html || '<p>Hali kurslar yo‘q.</p>';
+}
+
+function renderTeacherAssignments() {
+    const data = getData();
+    const user = getCurrentUser();
+    const myCourses = data.courses.filter(c => c.teacherId === user.id);
+    const myAssignments = data.assignments.filter(a => myCourses.find(c => c.id === a.courseId));
+    let html = '<ul class="list-group">';
+    myAssignments.forEach(a => {
+        const course = findCourse(a.courseId);
+        html += `<li><strong>${a.title}</strong> (${course ? course.name : ''}) - Muddat: ${a.dueDate}</li>`;
+    });
+    html += '</ul>';
+    document.getElementById('teacherAssignmentList').innerHTML = html || '<p>Hali topshiriq yo‘q.</p>';
+    
+    // Assignment modalga kurslarni yuklash
+    let opts = '<option value="">Kurs tanlang</option>';
+    myCourses.forEach(c => opts += `<option value="${c.id}">${c.name}</option>`);
+    document.getElementById('assignCourse').innerHTML = opts;
+}
+
+function addAssignment() {
+    const courseId = parseInt(document.getElementById('assignCourse').value);
+    const title = document.getElementById('assignTitle').value.trim();
+    const desc = document.getElementById('assignDesc').value.trim();
+    const dueDate = document.getElementById('assignDue').value;
+    if (!courseId || !title) { alert('To‘ldiring!'); return; }
+    let data = getData();
+    data.assignments.push({ id: getNextId('assignments'), courseId, title, description: desc, dueDate });
+    saveData(data);
+    closeModal('assignmentModal');
+    document.getElementById('assignTitle').value = '';
+    document.getElementById('assignDesc').value = '';
+    document.getElementById('assignDue').value = '';
+    renderTeacher();
+}
+
+function renderGradingSelect() {
+    const data = getData();
+    const user = getCurrentUser();
+    const myCourses = data.courses.filter(c => c.teacherId === user.id);
+    const myAssignments = data.assignments.filter(a => myCourses.find(c => c.id === a.courseId));
+    let opts = '<option value="">Topshiriq tanlang</option>';
+    myAssignments.forEach(a => opts += `<option value="${a.id}">${a.title}</option>`);
+    document.getElementById('gradingAssignmentSelect').innerHTML = opts;
+}
+
+function loadGradingList() {
+    const assignmentId = parseInt(document.getElementById('gradingAssignmentSelect').value);
+    if (!assignmentId) { document.getElementById('gradingList').innerHTML = ''; return; }
+    const data = getData();
+    const assignment = findAssignment(assignmentId);
+    const course = findCourse(assignment.courseId);
+    const enrolled = data.enrollments.filter(e => e.courseId === course.id);
+    let html = '<table class="table"><tr><th>Talaba</th><th>Holati</th><th>Baho</th><th>Fikr</th><th>Amal</th></tr>';
+    enrolled.forEach(e => {
+        const student = findUser(e.studentId);
+        const sub = data.submissions.find(s => s.assignmentId === assignmentId && s.studentId === e.studentId);
+        const grade = sub ? sub.grade : '';
+        const feedback = sub ? sub.feedback : '';
+        html += `<tr><td>${student ? student.name : 'Noma\'lum'}</td>
+        <td>${sub ? 'Topshirilgan' : 'Topshirilmagan'}</td>
+        <td><input type="number" id="grade_${student.id}" value="${grade || ''}" class="form-control" style="width:70px;" /></td>
+        <td><input type="text" id="fb_${student.id}" value="${feedback || ''}" class="form-control" placeholder="Fikr" /></td>
+        <td><button class="btn-primary" onclick="saveGrade(${assignmentId}, ${student.id})">Saqlash</button></td></tr>`;
+    });
+    html += '</table>';
+    document.getElementById('gradingList').innerHTML = html;
+}
+
+function saveGrade(assignmentId, studentId) {
+    const grade = parseFloat(document.getElementById(`grade_${studentId}`).value);
+    const feedback = document.getElementById(`fb_${studentId}`).value.trim();
+    let data = getData();
+    let sub = data.submissions.find(s => s.assignmentId === assignmentId && s.studentId === studentId);
+    if (!sub) {
+        // Agar topshirmagan bo'lsa, yangi yozuv yaratamiz
+        sub = { id: getNextId('submissions'), assignmentId, studentId, fileUrl: 'manual.pdf', grade: null, feedback: '' };
+        data.submissions.push(sub);
+    }
+    sub.grade = grade;
+    sub.feedback = feedback;
+    saveData(data);
+    alert('Baho saqlandi!');
+    loadGradingList();
+}
+
+// ========== TALABA FUNKSIYALARI ==========
+function renderStudent() {
+    const user = getCurrentUser();
+    document.getElementById('studentName').innerText = user ? user.name : 'Talaba';
+    renderStudentStats();
+    renderStudentCourses();
+    renderStudentAssignments();
+    renderStudentGrades();
+    renderStudentProfile();
+    setupTabs('student');
+}
+
+function renderStudentStats() {
+    const data = getData();
+    const user = getCurrentUser();
+    const myCourses = data.enrollments.filter(e => e.studentId === user.id).map(e => findCourse(e.courseId)).filter(Boolean);
+    const myAssignments = data.assignments.filter(a => myCourses.find(c => c.id === a.courseId));
+    const mySubs = data.submissions.filter(s => s.studentId === user.id);
+    const avgGrade = mySubs.length > 0 ? (mySubs.reduce((a,b) => a + (b.grade || 0), 0) / mySubs.length).toFixed(1) : 0;
+    document.getElementById('studentStatsGrid').innerHTML = `
+        <div class="stat-card"><i class="fas fa-book"></i><div><h3>${myCourses.length}</h3><p>Mening kurslarim</p></div></div>
+        <div class="stat-card"><i class="fas fa-tasks"></i><div><h3>${myAssignments.length}</h3><p>Jami topshiriqlar</p></div></div>
+        <div class="stat-card"><i class="fas fa-star"></i><div><h3>${avgGrade}</h3><p>O‘rtacha baho</p></div></div>
+    `;
+}
+
+function renderStudentCourses() {
+    const data = getData();
+    const user = getCurrentUser();
+    const myCourses = data.enrollments.filter(e => e.studentId === user.id).map(e => findCourse(e.courseId)).filter(Boolean);
+    let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:15px;">';
+    myCourses.forEach(c => {
+        const teacher = findUser(c.teacherId);
+        html += `<div class="stat-card"><i class="fas fa-graduation-cap"></i><div><h3>${c.name}</h3><p>${c.code} | ${teacher ? teacher.name : ''}</p></div></div>`;
+    });
+    html += '</div>';
+    document.getElementById('studentCourseList').innerHTML = html || '<p>Hali kurslarga yozilmagansiz.</p>';
+}
+
+function renderStudentAssignments() {
+    const data = getData();
+    const user = getCurrentUser();
+    const myCourses = data.enrollments.filter(e => e.studentId === user.id).map(e => e.courseId);
+    const myAssignments = data.assignments.filter(a => myCourses.includes(a.courseId));
+    let html = '<ul class="list-group">';
+    myAssignments.forEach(a => {
+        const sub = data.submissions.find(s => s.assignmentId === a.id && s.studentId === user.id);
+        const status = sub ? '✅ Topshirilgan' : '⏳ Kutilmoqda';
+        const course = findCourse(a.courseId);
+        html += `<li>
+            <strong>${a.title}</strong> (${course ? course.name : ''}) - Muddat: ${a.dueDate} 
+            <span style="float:right;">${status}</span>
+            ${!sub ? `<button class="btn-primary" onclick="submitAssignment(${a.id})">Topshirish</button>` : ''}
+        </li>`;
+    });
+    html += '</ul>';
+    document.getElementById('studentAssignmentList').innerHTML = html || '<p>Hali topshiriq yo‘q.</p>';
+}
+
+function submitAssignment(assignmentId) {
+    const data = getData();
+    const user = getCurrentUser();
+    if (data.submissions.find(s => s.assignmentId === assignmentId && s.studentId === user.id)) {
+        alert('Allaqachon topshirilgan!');
+        return;
+    }
+    data.submissions.push({ id: getNextId('submissions'), assignmentId, studentId: user.id, fileUrl: 'submitted.pdf', grade: null, feedback: '' });
+    saveData(data);
+    renderStudentAssignments();
+    renderStudentStats();
+    alert('Topshiriq muvaffaqiyatli yuborildi!');
+}
+
+function renderStudentGrades() {
+    const data = getData();
+    const user = getCurrentUser();
+    const mySubs = data.submissions.filter(s => s.studentId === user.id);
+    let html = '<table class="table"><tr><th>Topshiriq</th><th>Kurs</th><th>Baho</th><th>Fikr</th></tr>';
+    mySubs.forEach(s => {
+        const ass = findAssignment(s.assignmentId);
+        const course = ass ? findCourse(ass.courseId) : null;
+        html += `<tr><td>${ass ? ass.title : 'Noma\'lum'}</td><td>${course ? course.name : ''}</td><td>${s.grade !== null ? s.grade : 'Baholanmagan'}</td><td>${s.feedback || '-'}</td></tr>`;
+    });
+    html += '</table>';
+    document.getElementById('studentGradeList').innerHTML = html || '<p>Hali baho yo‘q.</p>';
+}
+
+function renderStudentProfile() {
+    const user = getCurrentUser();
+    document.getElementById('studentProfileCard').innerHTML = `
+        <div class="profile-card">
+            <div style="text-align:center;padding:20px;"><i class="fas fa-user-circle" style="font-size:80px;color:#0056b3;"></i></div>
+            <h2>${user.name}</h2>
+            <p><strong>Login:</strong> ${user.username}</p>
+            <p><strong>Rol:</strong> ${user.role}</p>
+            <p><strong>ID:</strong> ${user.id}</p>
+        </div>
+    `;
+}
+
+// ========== UMUMIY YORDAMCHI FUNKSIYALAR ==========
+function openModal(id) { document.getElementById(id).style.display = 'block'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+function setupTabs(prefix) {
+    const container = document.getElementById(prefix + 'Dashboard');
+    if (!container) return;
+    const links = container.querySelectorAll('.sidebar-nav li');
+    links.forEach(li => {
+        li.addEventListener('click', function(e) {
+            links.forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+            const tabId = this.dataset.tab;
+            // Hide all tab contents
+            container.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+            const target = document.getElementById(tabId);
+            if (target) target.style.display = 'block';
+            
+            // Update title
+            const titleMap = {
+                'admin-stats':'Statistika', 'admin-users':'Foydalanuvchilar', 'admin-courses':'Kurslar', 'admin-enroll':'Ro‘yxatga olish',
+                'teacher-stats':'Statistika', 'teacher-courses':'Mening kurslarim', 'teacher-assignments':'Topshiriqlar', 'teacher-grading':'Baholash',
+                'student-stats':'Statistika', 'student-courses':'Mening kurslarim', 'student-assignments':'Topshiriqlar', 'student-grades':'Baholar', 'student-profile':'Profil'
+            };
+            const titleEl = document.getElementById(prefix + 'PageTitle');
+            if (titleEl) titleEl.innerText = titleMap[tabId] || tabId;
         });
-    </script>
+    });
+    // Trigger first tab
+    const first = container.querySelector('.sidebar-nav li.active');
+    if (first) first.click();
+}
+
+// ========== ENTER BOSILGANDA LOGIN ==========
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && document.getElementById('loginPage').style.display !== 'none') {
+        login();
+    }
+});
+
+// ========== SAHIFA YUKLANGANDA ==========
+window.onload = function() {
+    // Modallarni yopish uchun tashqariga bosganda
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = 'none';
+        }
+    };
+    const user = getCurrentUser();
+    if (user) {
+        showDashboard(user.role);
+    } else {
+        document.getElementById('loginPage').style.display = 'flex';
+    }
+};
+</script>
 </body>
 </html>
